@@ -7,27 +7,27 @@ local LocalPlayer = Players.LocalPlayer
 -- Global variables for hitbox settings
 _G.HeadSize = 15
 _G.Disabled = false
-_G.SelectedColor = BrickColor.new("Lime green") -- Default selected color, ensure it's in your list
+_G.SelectedColor = BrickColor.new("Lime green") -- Default selected color, pastikan ini ada di daftar Anda
 
 -- Create the main ScreenGui
 local gui = Instance.new("ScreenGui", game.CoreGui)
-gui.Name = "HitboxExpanderV2 by Luminaprojects"
-gui.ResetOnSpawn = false -- Prevent GUI from resetting on player spawn
+gui.Name = "HitboxExpander by Luminaprojects"
+gui.ResetOnSpawn = false -- Mencegah GUI direset saat pemain respawn
 
 -- Create the main frame
 local frame = Instance.new("Frame", gui)
 frame.Size = UDim2.new(0, 300, 0, 220)
-frame.Position = UDim2.new(0.5, -150, 0.5, -110) -- Centered
+frame.Position = UDim2.new(0.5, -150, 0.5, -110) -- Diposisikan di tengah
 frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 frame.BorderSizePixel = 0
-frame.Active = true -- Allows it to receive input
-frame.Draggable = true -- Allows it to be dragged by the user
-frame.ClipsDescendants = true -- Important for the scrolling frame
+frame.Active = true -- Memungkinkan untuk menerima input
+frame.Draggable = true -- Memungkinkan untuk diseret oleh pengguna
+frame.ClipsDescendants = true -- PENTING untuk scrolling frame
 
 -- Create the title bar
 local title = Instance.new("TextLabel", frame)
-title.Size = UDim2.new(1, -70, 0, 30) -- Adjusted size to make space for buttons
-title.Text = "Hitbox ExpanderV2 by Luminaprojects"
+title.Size = UDim2.new(1, -70, 0, 30) -- Ukuran disesuaikan untuk memberi ruang pada tombol
+title.Text = "Hitbox Expander by Luminaprojects"
 title.TextColor3 = Color3.new(1, 1, 1)
 title.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
 title.Font = Enum.Font.GothamBold
@@ -40,7 +40,7 @@ title.SizeConstraint = Enum.SizeConstraint.RelativeXX
 -- Create the minimize button
 local minimizeBtn = Instance.new("TextButton", frame)
 minimizeBtn.Size = UDim2.new(0, 30, 0, 30)
-minimizeBtn.Position = UDim2.new(1, -65, 0, 0) -- Positioned next to close button
+minimizeBtn.Position = UDim2.new(1, -65, 0, 0) -- Diposisikan di samping tombol tutup
 minimizeBtn.Text = "-"
 minimizeBtn.Font = Enum.Font.GothamBold
 minimizeBtn.TextSize = 18
@@ -50,23 +50,23 @@ minimizeBtn.TextColor3 = Color3.new(1, 1, 1)
 -- Create the close button (X)
 local closeBtn = Instance.new("TextButton", frame)
 closeBtn.Size = UDim2.new(0, 30, 0, 30)
-closeBtn.Position = UDim2.new(1, -35, 0, 0) -- Positioned at the top right
+closeBtn.Position = UDim2.new(1, -35, 0, 0) -- Diposisikan di kanan atas
 closeBtn.Text = "X"
 closeBtn.Font = Enum.Font.GothamBold
 closeBtn.TextSize = 18
-closeBtn.BackgroundColor3 = Color3.fromRGB(170, 0, 0) -- Red color for close
+closeBtn.BackgroundColor3 = Color3.fromRGB(170, 0, 0) -- Warna merah untuk tutup
 closeBtn.TextColor3 = Color3.new(1, 1, 1)
 
 -- Connect close button functionality
 closeBtn.MouseButton1Click:Connect(function()
-	gui:Destroy() -- Destroy the entire GUI
+	gui:Destroy() -- Hancurkan seluruh GUI
 end)
 
 -- Hitbox Size Label
 local sizeLabel = Instance.new("TextLabel", frame)
 sizeLabel.Position = UDim2.new(0, 10, 0, 40)
 sizeLabel.Size = UDim2.new(0, 120, 0, 25)
-sizeLabel.Text = "Hitbox Size:"
+sizeLabel.Text = "Ukuran Hitbox:"
 sizeLabel.TextColor3 = Color3.new(1, 1, 1)
 sizeLabel.BackgroundTransparency = 1
 sizeLabel.Font = Enum.Font.Gotham
@@ -82,16 +82,16 @@ sizeBox.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 sizeBox.TextColor3 = Color3.new(1, 1, 1)
 sizeBox.Font = Enum.Font.Gotham
 sizeBox.TextSize = 14
-sizeBox.PlaceholderText = "Enter size (e.g., 15)"
+sizeBox.PlaceholderText = "Masukkan ukuran (misal: 15)"
 sizeBox.TextScaled = true
 sizeBox.SizeConstraint = Enum.SizeConstraint.RelativeXX
 
 sizeBox.FocusLost:Connect(function(enterPressed)
 	local num = tonumber(sizeBox.Text)
-	if num and num >= 1 then -- Ensure size is a positive number
+	if num and num >= 1 then -- Pastikan ukuran adalah angka positif
 		_G.HeadSize = num
 	else
-		sizeBox.Text = tostring(_G.HeadSize) -- Revert if invalid input
+		sizeBox.Text = tostring(_G.HeadSize) -- Kembali jika input tidak valid
 	end
 end)
 
@@ -99,44 +99,46 @@ end)
 local colorLabel = Instance.new("TextLabel", frame)
 colorLabel.Position = UDim2.new(0, 10, 0, 75)
 colorLabel.Size = UDim2.new(0, 120, 0, 25)
-colorLabel.Text = "Color:"
+colorLabel.Text = "Warna:"
 colorLabel.TextColor3 = Color3.new(1, 1, 1)
 colorLabel.BackgroundTransparency = 1
 colorLabel.Font = Enum.Font.Gotham
 colorLabel.TextSize = 14
 colorLabel.TextXAlignment = Enum.TextXAlignment.Left
 
--- Color Dropdown Button (displays current color)
+-- Color Dropdown Button (menampilkan warna saat ini)
 local colorDropdown = Instance.new("TextButton", frame)
 colorDropdown.Position = UDim2.new(0, 140, 0, 75)
 colorDropdown.Size = UDim2.new(0, 140, 0, 25)
-colorDropdown.Text = _G.SelectedColor.Name -- Display initial color name
+colorDropdown.Text = _G.SelectedColor.Name -- Menampilkan nama warna awal
 colorDropdown.BackgroundColor3 = _G.SelectedColor.Color
 colorDropdown.TextColor3 = Color3.new(1, 1, 1)
 colorDropdown.Font = Enum.Font.Gotham
 colorDropdown.TextSize = 14
 colorDropdown.TextScaled = true
 colorDropdown.SizeConstraint = Enum.SizeConstraint.RelativeXX
+colorDropdown.ZIndex = 2 -- Pastikan ini di bawah opsi dropdown saat terbuka
 
--- ScrollingFrame for color options
+-- ScrollingFrame untuk opsi warna
 local colorOptionsFrame = Instance.new("ScrollingFrame", frame)
-colorOptionsFrame.Size = UDim2.new(0, 140, 0, 100) -- Fixed height for scrollable area
-colorOptionsFrame.Position = UDim2.new(0, 140, 0, 105) -- Position below the dropdown button
+colorOptionsFrame.Size = UDim2.new(0, 140, 0, 100) -- Tinggi tetap untuk area yang dapat digulir
+colorOptionsFrame.Position = UDim2.new(0, 140, 0, 105) -- Posisi di bawah tombol dropdown
 colorOptionsFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+colorOptionsFrame.BackgroundTransparency = 0 -- Pastikan tidak transparan
 colorOptionsFrame.BorderSizePixel = 0
 colorOptionsFrame.ScrollBarThickness = 8
 colorOptionsFrame.ScrollBarImageTransparency = 0.5
-colorOptionsFrame.Visible = false -- Hidden by default
-colorOptionsFrame.ZIndex = 3 -- Ensure it's on top of other elements
+colorOptionsFrame.Visible = false -- Tersembunyi secara default
+colorOptionsFrame.ZIndex = 3 -- Pastikan ini di atas elemen lain
 
--- UIListLayout to arrange color options vertically
+-- UIListLayout untuk mengatur opsi warna secara vertikal
 local listLayout = Instance.new("UIListLayout", colorOptionsFrame)
 listLayout.FillDirection = Enum.FillDirection.Vertical
 listLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
 listLayout.VerticalAlignment = Enum.VerticalAlignment.Top
-listLayout.Padding = UDim.new(0, 2) -- Padding between color options
+listLayout.Padding = UDim.new(0, 2) -- Padding antar opsi warna
 
--- Custom color options provided by the user
+-- Opsi warna kustom yang disediakan oleh pengguna
 local customColorOptions = {
 	["Sand"] = BrickColor.new("Sand"),
 	["Fawn brown"] = BrickColor.new("Fawn brown"),
@@ -301,20 +303,20 @@ local dropdownOpen = false
 
 -- Function to populate the color options frame
 local function populateColorOptions()
-	-- Clear existing options
+	-- Hapus opsi yang ada
 	for _, child in pairs(colorOptionsFrame:GetChildren()) do
 		if child:IsA("TextButton") then
 			child:Destroy()
 		end
 	end
 
-	local optionHeight = 20 -- Height of each color option button
+	local optionHeight = 20 -- Tinggi setiap tombol opsi warna
 	local totalContentHeight = 0
 
-	-- Iterate through the custom color options
+	-- Iterasi melalui opsi warna kustom
 	for name, brick in pairs(customColorOptions) do
 		local opt = Instance.new("TextButton")
-		opt.Size = UDim2.new(1, 0, 0, optionHeight) -- Full width of scrolling frame
+		opt.Size = UDim2.new(1, 0, 0, optionHeight) -- Lebar penuh scrolling frame
 		opt.Text = name
 		opt.BackgroundColor3 = brick.Color
 		opt.TextColor3 = Color3.new(1, 1, 1)
@@ -322,19 +324,20 @@ local function populateColorOptions()
 		opt.TextSize = 13
 		opt.TextScaled = true
 		opt.SizeConstraint = Enum.SizeConstraint.RelativeXX
-		opt.Parent = colorOptionsFrame -- Parent to the scrolling frame
+		opt.Parent = colorOptionsFrame -- Parent ke scrolling frame
+		opt.ZIndex = 4 -- Pastikan opsi berada di atas scrolling frame itu sendiri
 
 		opt.MouseButton1Click:Connect(function()
 			_G.SelectedColor = brick
 			colorDropdown.Text = name
 			colorDropdown.BackgroundColor3 = brick.Color
-			colorOptionsFrame.Visible = false -- Hide the dropdown
+			colorOptionsFrame.Visible = false -- Sembunyikan dropdown
 			dropdownOpen = false
 		end)
 		totalContentHeight += optionHeight + listLayout.Padding.Offset
 	end
 
-	-- Adjust CanvasSize to fit all options, allowing scrolling
+	-- Sesuaikan CanvasSize agar sesuai dengan semua opsi, memungkinkan pengguliran
 	colorOptionsFrame.CanvasSize = UDim2.new(0, 0, 0, totalContentHeight)
 end
 
@@ -343,7 +346,7 @@ colorDropdown.MouseButton1Click:Connect(function()
 	dropdownOpen = not dropdownOpen
 	colorOptionsFrame.Visible = dropdownOpen
 	if dropdownOpen then
-		populateColorOptions() -- Populate only when opening
+		populateColorOptions() -- Isi hanya saat membuka
 	end
 end)
 
@@ -351,7 +354,7 @@ end)
 local toggleBtn = Instance.new("TextButton", frame)
 toggleBtn.Position = UDim2.new(0, 10, 0, 170)
 toggleBtn.Size = UDim2.new(0, 280, 0, 30)
-toggleBtn.Text = "Enable Hitbox"
+toggleBtn.Text = "Aktifkan Hitbox"
 toggleBtn.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
 toggleBtn.TextColor3 = Color3.new(1, 1, 1)
 toggleBtn.Font = Enum.Font.GothamBold
@@ -359,7 +362,7 @@ toggleBtn.TextSize = 16
 
 toggleBtn.MouseButton1Click:Connect(function()
 	_G.Disabled = not _G.Disabled
-	toggleBtn.Text = _G.Disabled and "Disable Hitbox" or "Enable Hitbox"
+	toggleBtn.Text = _G.Disabled and "Nonaktifkan Hitbox" or "Aktifkan Hitbox"
 	toggleBtn.BackgroundColor3 = _G.Disabled and Color3.fromRGB(170, 0, 0) or Color3.fromRGB(0, 170, 0)
 end)
 
@@ -367,16 +370,16 @@ end)
 local minimized = false
 minimizeBtn.MouseButton1Click:Connect(function()
 	minimized = not minimized
-	local goalSize = minimized and UDim2.new(0, 300, 0, 30) or UDim2.new(0, 300, 0, 220) -- Height is 30 for title bar only
+	local goalSize = minimized and UDim2.new(0, 300, 0, 30) or UDim2.new(0, 300, 0, 220) -- Tinggi 30 hanya untuk bilah judul
 	TweenService:Create(frame, TweenInfo.new(0.25), {Size = goalSize}):Play()
 
-	-- Hide/show all elements except title and control buttons
+	-- Sembunyikan/tampilkan semua elemen kecuali judul dan tombol kontrol
 	for _, v in pairs(frame:GetChildren()) do
-		if v ~= title and v ~= minimizeBtn and v ~= closeBtn then -- Exclude close button from visibility toggle
+		if v ~= title and v ~= minimizeBtn and v ~= closeBtn then -- Kecualikan tombol tutup dari toggle visibilitas
 			v.Visible = not minimized
 		end
 	end
-	-- Ensure color options frame is hidden when minimized
+	-- Pastikan frame opsi warna tersembunyi saat diminimalkan
 	if minimized then
 		colorOptionsFrame.Visible = false
 		dropdownOpen = false
@@ -389,7 +392,7 @@ RunService.RenderStepped:Connect(function()
 		for _, plr in pairs(Players:GetPlayers()) do
 			if plr ~= LocalPlayer and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
 				local part = plr.Character.HumanoidRootPart
-				pcall(function() -- Use pcall to prevent script errors from stopping the loop
+				pcall(function() -- Gunakan pcall untuk mencegah error script menghentikan loop
 					part.Size = Vector3.new(_G.HeadSize, _G.HeadSize, _G.HeadSize)
 					part.Transparency = 0.7
 					part.BrickColor = _G.SelectedColor
