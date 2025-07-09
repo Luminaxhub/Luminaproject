@@ -8,7 +8,7 @@ _G.Disabled = false
 _G.SelectedColor = BrickColor.new("Lime green")
 
 local gui = Instance.new("ScreenGui", game.CoreGui)
-gui.Name = "Hitbox Expander - luminaprojects"
+gui.Name = "Hitbox ExpanderVIP - luminaprojects"
 
 local frame = Instance.new("Frame", gui)
 frame.Size = UDim2.new(0, 300, 0, 250)
@@ -24,7 +24,7 @@ uiCorner.CornerRadius = UDim.new(0, 8)
 
 local title = Instance.new("TextLabel", frame)
 title.Size = UDim2.new(1, 0, 0, 30)
-title.Text = "Hitbox Expander - Luminaprojects"
+title.Text = "Hitbox ExpanderVIP - Luminaprojects"
 title.TextColor3 = Color3.new(1, 1, 1)
 title.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
 title.Font = Enum.Font.GothamBold
@@ -100,6 +100,36 @@ local colors = {
     {"Orange red", BrickColor.new("Bright red")},
     {"Coral", BrickColor.new("Cool yellow")},
     {"Teal", BrickColor.new("Teal")},
+    {"Cyan", BrickColor.new("Cyan")},
+    {"Magenta", BrickColor.new("Magenta")},
+    {"Brick yellow", BrickColor.new("Brick yellow")},
+    {"Dark stone grey", BrickColor.new("Dark stone grey")},
+    {"Earth green", BrickColor.new("Earth green")},
+    {"Navy blue", BrickColor.new("Navy blue")},
+    {"Medium stone grey", BrickColor.new("Medium stone grey")},
+    {"Reddish brown", BrickColor.new("Reddish brown")},
+    {"Medium red", BrickColor.new("Medium red")},
+    {"Bright green", BrickColor.new("Bright green")},
+    {"Pastel orange", BrickColor.new("Pastel orange")},
+    {"Pastel yellow", BrickColor.new("Pastel yellow")},
+    {"Pastel green", BrickColor.new("Pastel green")},
+    {"Pastel violet", BrickColor.new("Pastel violet")},
+    {"Pastel blue-green", BrickColor.new("Pastel Blue-green")},
+    {"Medium lilac", BrickColor.new("Medium lilac")},
+    {"Bright reddish violet", BrickColor.new("Bright reddish violet")},
+    {"Sand green", BrickColor.new("Sand green")},
+    {"Sand blue", BrickColor.new("Sand blue")},
+    {"Pearl gold", BrickColor.new("Pearl gold")},
+    {"Pearl silver", BrickColor.new("Pearl light grey")},
+    {"Ghost grey", BrickColor.new("Ghost grey")},
+    {"Really black", BrickColor.new("Really black")},
+    {"Bright blue", BrickColor.new("Bright blue")},
+    {"Bright red", BrickColor.new("Bright red")},
+    {"Bright yellow", BrickColor.new("Bright yellow")},
+    {"Bright violet", BrickColor.new("Bright violet")},
+    {"Light blue", BrickColor.new("Light blue")},
+    {"Light red", BrickColor.new("Light red")},
+    {"Light green", BrickColor.new("Light green")},
 }
 
 for _, color in ipairs(colors) do
