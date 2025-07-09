@@ -2,11 +2,26 @@ local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
-local LocalPlayer = Players:GetLocalPlayer()
 
-_G.HeadSize = 10
+print("Script dimulai.")
+
+-- Tunggu hingga LocalPlayer tersedia
+local LocalPlayer = Players.LocalPlayer
+if not LocalPlayer then
+    Players.PlayerAdded:Wait()
+    LocalPlayer = Players.LocalPlayer
+end
+print("LocalPlayer ditemukan: " .. LocalPlayer.Name)
+
+-- Tunggu hingga PlayerGui tersedia
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+print("PlayerGui ditemukan.")
+
+-- Global variables for hitbox settings
+_G.HeadSize = 15
 _G.Disabled = false
 
+-- Daftar lengkap BrickColor unik yang tersedia di Roblox, diformat sesuai permintaan
 local customColorOptions = {
 	["White"] = BrickColor.new("White"),
 	["Grey"] = BrickColor.new("Grey"),
@@ -167,16 +182,19 @@ local customColorOptions = {
 	["Cloudy grey"] = BrickColor.new("Cloudy grey"),
 }
 
+-- Konversi customColorOptions ke array untuk iterasi di UI dan pengurutan
 local finalUniqueColorOptions = {}
 for name, brick in pairs(customColorOptions) do
     table.insert(finalUniqueColorOptions, {Name = name, BrickColor = brick})
 end
 
+-- Urutkan warna berdasarkan nama untuk tampilan yang konsisten
 table.sort(finalUniqueColorOptions, function(a, b)
     return a.Name < b.Name
 end)
 
-_G.SelectedColor = BrickColor.new("Lime green")
+-- Setel warna default
+_G.SelectedColor = BrickColor.new("Lime green") -- Default ke Lime green jika ada
 local foundDefault = false
 for _, colorEntry in pairs(finalUniqueColorOptions) do
     if colorEntry.Name == "Lime green" then
@@ -186,13 +204,17 @@ for _, colorEntry in pairs(finalUniqueColorOptions) do
     end
 end
 if not foundDefault and #finalUniqueColorOptions > 0 then
-    _G.SelectedColor = finalUniqueColorOptions[1].BrickColor
+    _G.SelectedColor = finalUniqueColorOptions[1].BrickColor -- Jika Lime green tidak ada, gunakan warna pertama yang tersedia
 end
 
 
-local gui = Instance.new("ScreenGui", game.CoreGui)
+-- Create the main ScreenGui
+local gui = Instance.new("ScreenGui") -- Tidak langsung parent ke CoreGui
 gui.Name = "HitboxExpander by Luminaprojects"
 gui.ResetOnSpawn = false -- Prevent GUI from resetting on player spawn
+gui.Parent = PlayerGui -- Parent ke PlayerGui
+
+print("ScreenGui dibuat dan diparenting ke PlayerGui.")
 
 -- Create the main frame
 local frame = Instance.new("Frame", gui)
@@ -203,6 +225,7 @@ frame.BorderSizePixel = 0
 frame.Active = true -- Memungkinkan untuk menerima input
 frame.Draggable = true -- Memungkinkan untuk diseret oleh pengguna
 frame.ClipsDescendants = true -- PENTING untuk scrolling frame
+print("Frame utama dibuat.")
 
 -- Create the title bar
 local titleBar = Instance.new("Frame", frame)
@@ -210,6 +233,7 @@ titleBar.Size = UDim2.new(1, 0, 0, 30)
 titleBar.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
 titleBar.BorderSizePixel = 0
 titleBar.Position = UDim2.new(0, 0, 0, 0)
+print("Title bar dibuat.")
 
 local title = Instance.new("TextLabel", titleBar)
 title.Size = UDim2.new(1, -70, 1, 0)
@@ -247,6 +271,7 @@ closeBtn.TextColor3 = Color3.new(1, 1, 1)
 -- Connect close button functionality
 closeBtn.MouseButton1Click:Connect(function()
 	gui:Destroy() -- Hancurkan seluruh GUI
+    print("GUI dihancurkan.")
 end)
 
 -- Tab System Frame
@@ -255,6 +280,7 @@ tabFrame.Size = UDim2.new(1, 0, 0, 30)
 tabFrame.Position = UDim2.new(0, 0, 0, 30) -- Di bawah titleBar
 tabFrame.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
 tabFrame.BorderSizePixel = 0
+print("Tab frame dibuat.")
 
 local tabLayout = Instance.new("UIListLayout", tabFrame)
 tabLayout.FillDirection = Enum.FillDirection.Horizontal
@@ -288,6 +314,7 @@ tpToolTabBtn.TextSize = 16
 tpToolTabBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
 tpToolTabBtn.TextColor3 = Color3.new(1, 1, 1)
 tpToolTabBtn.Name = "TPToolTab"
+print("Tombol tab dibuat.")
 
 -- Content Frames for each tab
 local contentFrame = Instance.new("Frame", frame)
@@ -296,6 +323,7 @@ contentFrame.Position = UDim2.new(0, 0, 0, 60)
 contentFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 contentFrame.BorderSizePixel = 0
 contentFrame.ClipsDescendants = true
+print("Content frame dibuat.")
 
 local mainContent = Instance.new("Frame", contentFrame)
 mainContent.Size = UDim2.new(1, 0, 1, 0)
@@ -314,6 +342,7 @@ tpToolContent.Size = UDim2.new(1, 0, 1, 0)
 tpToolContent.Position = UDim2.new(0, 0, 0, 0)
 tpToolContent.BackgroundTransparency = 1
 tpToolContent.Visible = false
+print("Konten tab dibuat.")
 
 local currentActiveTab = mainContent
 
@@ -333,6 +362,7 @@ local function setActiveTab(tab)
     elseif tab == tpToolContent then
         tpToolTabBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     end
+    print("Tab aktif diatur ke: " .. tab.Name)
 end
 
 mainTabBtn.MouseButton1Click:Connect(function() setActiveTab(mainContent) end)
@@ -373,6 +403,7 @@ sizeBox.FocusLost:Connect(function(enterPressed)
 	else
 		sizeBox.Text = tostring(_G.HeadSize)
 	end
+    print("Ukuran hitbox diatur ke: " .. _G.HeadSize)
 end)
 
 local colorLabel = Instance.new("TextLabel", mainContent)
@@ -445,6 +476,7 @@ local function populateColorOptions()
 			colorDropdown.BackgroundColor3 = colorEntry.BrickColor.Color
 			colorOptionsFrame.Visible = false
 			dropdownOpen = false
+            print("Warna dipilih: " .. colorEntry.Name)
 		end)
 		totalContentHeight += optionHeight + listLayout.Padding.Offset
 	end
@@ -457,6 +489,7 @@ colorDropdown.MouseButton1Click:Connect(function()
 	colorOptionsFrame.Visible = dropdownOpen
 	if dropdownOpen then
 		populateColorOptions()
+        print("Dropdown warna dibuka/ditutup. Status: " .. tostring(dropdownOpen))
 	end
 end)
 
@@ -472,301 +505,4 @@ toggleBtn.TextSize = 16
 toggleBtn.MouseButton1Click:Connect(function()
 	_G.Disabled = not _G.Disabled
 	toggleBtn.Text = _G.Disabled and "Nonaktifkan Hitbox" or "Aktifkan Hitbox"
-	toggleBtn.BackgroundColor3 = _G.Disabled and Color3.fromRGB(170, 0, 0) or Color3.fromRGB(0, 170, 0)
-end)
-
-
--- --- More Settings Tab Content (Movement) ---
-local walkSpeedLabel = Instance.new("TextLabel", moreSettingsContent)
-walkSpeedLabel.Position = UDim2.new(0.05, 0, 0.05, 0)
-walkSpeedLabel.Size = UDim2.new(0.4, 0, 0, 25)
-walkSpeedLabel.Text = "Kecepatan Jalan:"
-walkSpeedLabel.TextColor3 = Color3.new(1, 1, 1)
-walkSpeedLabel.BackgroundTransparency = 1
-walkSpeedLabel.Font = Enum.Font.Gotham
-walkSpeedLabel.TextSize = 14
-walkSpeedLabel.TextXAlignment = Enum.TextXAlignment.Left
-
-local walkSpeedBox = Instance.new("TextBox", moreSettingsContent)
-walkSpeedBox.Position = UDim2.new(0.05, 0, 0.15, 0)
-walkSpeedBox.Size = UDim2.new(0.9, 0, 0, 30)
-walkSpeedBox.Text = tostring(LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") and LocalPlayer.Character.Humanoid.WalkSpeed or 16)
-walkSpeedBox.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-walkSpeedBox.TextColor3 = Color3.new(1, 1, 1)
-walkSpeedBox.Font = Enum.Font.Gotham
-walkSpeedBox.TextSize = 14
-walkSpeedBox.PlaceholderText = "Misal: 16"
-walkSpeedBox.TextScaled = true
-walkSpeedBox.SizeConstraint = Enum.SizeConstraint.RelativeXX
-
-walkSpeedBox.FocusLost:Connect(function()
-    local num = tonumber(walkSpeedBox.Text)
-    if num and num >= 0 and LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
-        LocalPlayer.Character.Humanoid.WalkSpeed = num
-    else
-        walkSpeedBox.Text = tostring(LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") and LocalPlayer.Character.Humanoid.WalkSpeed or 16)
-    end
-end)
-
-local jumpPowerLabel = Instance.new("TextLabel", moreSettingsContent)
-jumpPowerLabel.Position = UDim2.new(0.05, 0, 0.3, 0)
-jumpPowerLabel.Size = UDim2.new(0.4, 0, 0, 25)
-jumpPowerLabel.Text = "Kekuatan Lompat:"
-jumpPowerLabel.TextColor3 = Color3.new(1, 1, 1)
-jumpPowerLabel.BackgroundTransparency = 1
-jumpPowerLabel.Font = Enum.Font.Gotham
-jumpPowerLabel.TextSize = 14
-jumpPowerLabel.TextXAlignment = Enum.TextXAlignment.Left
-
-local jumpPowerBox = Instance.new("TextBox", moreSettingsContent)
-jumpPowerBox.Position = UDim2.new(0.05, 0, 0.4, 0)
-jumpPowerBox.Size = UDim2.new(0.9, 0, 0, 30)
-jumpPowerBox.Text = tostring(LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") and LocalPlayer.Character.Humanoid.JumpPower or 50)
-jumpPowerBox.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-jumpPowerBox.TextColor3 = Color3.new(1, 1, 1)
-jumpPowerBox.Font = Enum.Font.Gotham
-jumpPowerBox.TextSize = 14
-jumpPowerBox.PlaceholderText = "Misal: 50"
-jumpPowerBox.TextScaled = true
-jumpPowerBox.SizeConstraint = Enum.SizeConstraint.RelativeXX
-
-jumpPowerBox.FocusLost:Connect(function()
-    local num = tonumber(jumpPowerBox.Text)
-    if num and num >= 0 and LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
-        LocalPlayer.Character.Humanoid.JumpPower = num
-    else
-        jumpPowerBox.Text = tostring(LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") and LocalPlayer.Character.Humanoid.JumpPower or 50)
-    end
-end)
-
-local movementNote = Instance.new("TextLabel", moreSettingsContent)
-movementNote.Position = UDim2.new(0.05, 0, 0.55, 0)
-movementNote.Size = UDim2.new(0.9, 0, 0.2, 0)
-movementNote.Text = "(Catatan: Perubahan ini akan langsung diterapkan pada karakter Anda di game.)"
-movementNote.TextColor3 = Color3.fromRGB(150, 150, 150)
-movementNote.BackgroundTransparency = 1
-movementNote.Font = Enum.Font.Gotham
-movementNote.TextSize = 12
-movementNote.TextWrapped = true
-movementNote.TextXAlignment = Enum.TextXAlignment.Left
-
-
--- --- TP Tool Tab Content ---
-local tpMessageLabel = Instance.new("TextLabel", tpToolContent)
-tpMessageLabel.Position = UDim2.new(0.05, 0, 0.05, 0)
-tpMessageLabel.Size = UDim2.new(0.9, 0, 0, 25)
-tpMessageLabel.Text = "Pesan TP:"
-tpMessageLabel.TextColor3 = Color3.new(1, 1, 1)
-tpMessageLabel.BackgroundTransparency = 1
-tpMessageLabel.Font = Enum.Font.Gotham
-tpMessageLabel.TextSize = 14
-tpMessageLabel.TextXAlignment = Enum.TextXAlignment.Left
-
-local tpStatusBox = Instance.new("TextBox", tpToolContent)
-tpStatusBox.Position = UDim2.new(0.05, 0, 0.15, 0)
-tpStatusBox.Size = UDim2.new(0.9, 0, 0, 30)
-tpStatusBox.Text = "Siap untuk teleportasi."
-tpStatusBox.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-tpStatusBox.TextColor3 = Color3.new(1, 1, 1)
-tpStatusBox.Font = Enum.Font.Gotham
-tpStatusBox.TextSize = 14
-tpStatusBox.TextScaled = true
-tpStatusBox.SizeConstraint = Enum.SizeConstraint.RelativeXX
-tpStatusBox.ClearTextOnFocus = false
-tpStatusBox.Editable = false -- Tidak bisa diedit pengguna
-
-local tpToClickBtn = Instance.new("TextButton", tpToolContent)
-tpToClickBtn.Position = UDim2.new(0.05, 0, 0.3, 0)
-tpToClickBtn.Size = UDim2.new(0.9, 0, 0, 30)
-tpToClickBtn.Text = "Aktifkan Alat TP (Klik Lokasi)"
-tpToClickBtn.BackgroundColor3 = Color3.fromRGB(0, 120, 200)
-tpToClickBtn.TextColor3 = Color3.new(1, 1, 1)
-tpToClickBtn.Font = Enum.Font.GothamBold
-tpToClickBtn.TextSize = 16
-
-local tpToolActive = false
-local mouse = LocalPlayer:GetMouse()
-
-tpToClickBtn.MouseButton1Click:Connect(function()
-    tpToolActive = not tpToolActive
-    if tpToolActive then
-        tpStatusBox.Text = "TP Tool diaktifkan! Klik di game untuk teleportasi."
-        tpToClickBtn.BackgroundColor3 = Color3.fromRGB(200, 100, 0) -- Warna oranye saat aktif
-        tpToClickBtn.Text = "Nonaktifkan Alat TP (Klik Lokasi)"
-    else
-        tpStatusBox.Text = "TP Tool dinonaktifkan."
-        tpToClickBtn.BackgroundColor3 = Color3.fromRGB(0, 120, 200) -- Warna biru saat tidak aktif
-        tpToClickBtn.Text = "Aktifkan Alat TP (Klik Lokasi)"
-    end
-end)
-
-mouse.Button1Down:Connect(function()
-    if tpToolActive and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-        local targetPosition = mouse.Hit.p
-        LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(targetPosition + Vector3.new(0, 3, 0)) -- Sedikit di atas tanah
-        tpStatusBox.Text = "Teleportasi ke lokasi yang diklik!"
-        tpToolActive = false -- Nonaktifkan setelah teleportasi
-        tpToClickBtn.BackgroundColor3 = Color3.fromRGB(0, 120, 200)
-        tpToClickBtn.Text = "Aktifkan Alat TP (Klik Lokasi)"
-    end
-end)
-
-local playerListLabel = Instance.new("TextLabel", tpToolContent)
-playerListLabel.Position = UDim2.new(0.05, 0, 0.45, 0)
-playerListLabel.Size = UDim2.new(0.4, 0, 0, 25)
-playerListLabel.Text = "Teleportasi ke Pemain:"
-playerListLabel.TextColor3 = Color3.new(1, 1, 1)
-playerListLabel.BackgroundTransparency = 1
-playerListLabel.Font = Enum.Font.Gotham
-playerListLabel.TextSize = 14
-playerListLabel.TextXAlignment = Enum.TextXAlignment.Left
-
-local playerListFrame = Instance.new("ScrollingFrame", tpToolContent)
-playerListFrame.Size = UDim2.new(0.9, 0, 0.3, 0) -- Tinggi untuk daftar pemain
-playerListFrame.Position = UDim2.new(0.05, 0, 0.55, 0)
-playerListFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-playerListFrame.BackgroundTransparency = 0
-playerListFrame.BorderSizePixel = 0
-playerListFrame.ScrollBarThickness = 8
-playerListFrame.ScrollBarImageTransparency = 0.5
-playerListFrame.ZIndex = 3
-
-local playerListLayout = Instance.new("UIListLayout", playerListFrame)
-playerListLayout.FillDirection = Enum.FillDirection.Vertical
-playerListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
-playerListLayout.VerticalAlignment = Enum.VerticalAlignment.Top
-playerListLayout.Padding = UDim.new(0, 2)
-
-local selectedPlayerId = nil
-
-local function updatePlayerList()
-    -- Hapus entri pemain lama
-    for _, child in pairs(playerListFrame:GetChildren()) do
-        if child:IsA("TextButton") then
-            child:Destroy()
-        end
-    end
-
-    local playersInGame = Players:GetPlayers()
-    local optionHeight = 25
-    local totalContentHeight = 0
-
-    -- Tambahkan pemain lokal dulu
-    local localPlayerOpt = Instance.new("TextButton")
-    localPlayerOpt.Size = UDim2.new(1, 0, 0, optionHeight)
-    localPlayerOpt.Text = LocalPlayer.Name .. " (Anda)"
-    localPlayerOpt.BackgroundColor3 = Color3.fromRGB(70, 70, 100) -- Warna berbeda untuk pemain lokal
-    localPlayerOpt.TextColor3 = Color3.new(1, 1, 1)
-    localPlayerOpt.Font = Enum.Font.Gotham
-    localPlayerOpt.TextSize = 14
-    localPlayerOpt.TextScaled = true
-    localPlayerOpt.SizeConstraint = Enum.SizeConstraint.RelativeXX
-    localPlayerOpt.Parent = playerListFrame
-    localPlayerOpt.ZIndex = 4
-    localPlayerOpt.MouseButton1Click:Connect(function()
-        selectedPlayerId = LocalPlayer.UserId
-        tpStatusBox.Text = "Anda memilih diri sendiri. Tidak perlu teleportasi."
-    end)
-    totalContentHeight += optionHeight + playerListLayout.Padding.Offset
-
-    -- Urutkan pemain lain berdasarkan nama
-    table.sort(playersInGame, function(a, b)
-        return a.Name < b.Name
-    end)
-
-    for _, player in ipairs(playersInGame) do
-        if player ~= LocalPlayer then -- Jangan tampilkan pemain lokal lagi
-            local opt = Instance.new("TextButton")
-            opt.Size = UDim2.new(1, 0, 0, optionHeight)
-            opt.Text = player.Name
-            opt.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-            opt.TextColor3 = Color3.new(1, 1, 1)
-            opt.Font = Enum.Font.Gotham
-            opt.TextSize = 14
-            opt.TextScaled = true
-            opt.SizeConstraint = Enum.SizeConstraint.RelativeXX
-            opt.Parent = playerListFrame
-            opt.ZIndex = 4
-
-            opt.MouseButton1Click:Connect(function()
-                selectedPlayerId = player.UserId
-                tpStatusBox.Text = "Pemain terpilih: " .. player.Name
-            end)
-            totalContentHeight += optionHeight + playerListLayout.Padding.Offset
-        end
-    end
-    playerListFrame.CanvasSize = UDim2.new(0, 0, 0, totalContentHeight)
-end
-
--- Perbarui daftar pemain saat pemain bergabung atau keluar
-Players.PlayerAdded:Connect(updatePlayerList)
-Players.PlayerRemoving:Connect(updatePlayerList)
-
--- Panggil pertama kali saat script dimulai
-updatePlayerList()
-
-local tpToSelectedPlayerBtn = Instance.new("TextButton", tpToolContent)
-tpToSelectedPlayerBtn.Position = UDim2.new(0.05, 0, 0.9, 0)
-tpToSelectedPlayerBtn.Size = UDim2.new(0.9, 0, 0, 30)
-tpToSelectedPlayerBtn.Text = "Teleportasi ke Pemain Terpilih"
-tpToSelectedPlayerBtn.BackgroundColor3 = Color3.fromRGB(0, 120, 200)
-tpToSelectedPlayerBtn.TextColor3 = Color3.new(1, 1, 1)
-tpToSelectedPlayerBtn.Font = Enum.Font.GothamBold
-tpToSelectedPlayerBtn.TextSize = 16
-
-tpToSelectedPlayerBtn.MouseButton1Click:Connect(function()
-    if selectedPlayerId and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-        local targetPlayer = Players:GetPlayerByUserId(selectedPlayerId)
-        if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
-            -- Teleportasi ke posisi targetPlayer + sedikit offset Y untuk menghindari terjebak di dalam tanah
-            LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(targetPlayer.Character.HumanoidRootPart.Position + Vector3.new(0, 3, 0))
-            tpStatusBox.Text = "Teleportasi ke " .. targetPlayer.Name .. " berhasil!"
-        else
-            tpStatusBox.Text = "Pemain tidak ditemukan atau karakternya tidak ada."
-        end
-    else
-        tpStatusBox.Text = "Pilih pemain terlebih dahulu."
-    end
-end)
-
-
--- Minimize functionality
-local minimized = false
-minimizeBtn.MouseButton1Click:Connect(function()
-	minimized = not minimized
-	local goalSize = minimized and UDim2.new(0, 600, 0, 30) or UDim2.new(0, 600, 0, 400) -- Tinggi 30 hanya untuk bilah judul
-	TweenService:Create(frame, TweenInfo.new(0.25), {Size = goalSize}):Play()
-
-	-- Sembunyikan/tampilkan semua elemen kecuali titleBar
-	for _, v in pairs(frame:GetChildren()) do
-		if v ~= titleBar then
-			v.Visible = not minimized
-		end
-	end
-    -- Pastikan color options frame tersembunyi saat diminimalkan
-	if minimized then
-		colorOptionsFrame.Visible = false
-		dropdownOpen = false
-	end
-end)
-
--- Hitbox expansion logic (runs every frame)
-RunService.RenderStepped:Connect(function()
-	if _G.Disabled then
-		for _, plr in pairs(Players:GetPlayers()) do
-			if plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
-				-- Pastikan kita tidak mengubah hitbox pemain lokal itu sendiri
-				if plr ~= LocalPlayer then
-					local part = plr.Character.HumanoidRootPart
-					pcall(function() -- Gunakan pcall untuk mencegah error script menghentikan loop
-						part.Size = Vector3.new(_G.HeadSize, _G.HeadSize, _G.HeadSize)
-						part.Transparency = 0.7
-						part.BrickColor = _G.SelectedColor
-						part.Material = Enum.Material.Neon
-						part.CanCollide = false
-					end)
-				end
-			end
-		end
-	end
-end)
+	toggleBtn.BackgroundColor3 = _G.Disabled and Color3.fromRGB(170
