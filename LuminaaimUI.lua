@@ -11,10 +11,11 @@ _G.ESP = true
 _G.FOVSize = 250
 _G.Sensitivity = 0.4
 _G.TargetPart = "Head"
+_G.UIVisible = true
 
 -- UI
 local gui = Instance.new("ScreenGui", game.CoreGui)
-gui.Name = "Luminaprojects Aimbot"
+gui.Name = "LuminaAimbotUI"
 
 local frame = Instance.new("Frame", gui)
 frame.Size = UDim2.new(0, 250, 0, 230)
@@ -91,7 +92,6 @@ local function newDropdown(parent, text, options, ypos, callback)
 	end)
 end
 
--- UI Elements
 newTextLabel(frame, "Aimbot : ON", UDim2.new(0, 10, 0, 10))
 newSlider(frame, 0.1, 1, _G.Sensitivity, function(val)
 	_G.Sensitivity = val
@@ -107,6 +107,40 @@ newDropdown(frame, "Target Part", {"Head", "Torso"}, UDim2.new(0, 10, 0, 110), f
 end)
 
 newTextLabel(frame, "ESP : ON", UDim2.new(0, 10, 0, 140))
+
+-- Minimize & Close
+local minimizeBtn = Instance.new("TextButton", frame)
+minimizeBtn.Size = UDim2.new(0, 20, 0, 20)
+minimizeBtn.Position = UDim2.new(1, -45, 0, 0)
+minimizeBtn.Text = "-"
+minimizeBtn.TextColor3 = Color3.new(1,1,1)
+minimizeBtn.BackgroundTransparency = 1
+minimizeBtn.Font = Enum.Font.GothamBold
+minimizeBtn.TextSize = 18
+
+local closeBtn = Instance.new("TextButton", frame)
+closeBtn.Size = UDim2.new(0, 20, 0, 20)
+closeBtn.Position = UDim2.new(1, -25, 0, 0)
+closeBtn.Text = "X"
+closeBtn.TextColor3 = Color3.new(1,0.4,0.4)
+closeBtn.BackgroundTransparency = 1
+closeBtn.Font = Enum.Font.GothamBold
+closeBtn.TextSize = 14
+
+minimizeBtn.MouseButton1Click:Connect(function()
+	_G.UIVisible = not _G.UIVisible
+	for _, v in pairs(frame:GetChildren()) do
+		if v:IsA("Frame") or v:IsA("TextLabel") or v:IsA("TextButton") then
+			if v ~= minimizeBtn and v ~= closeBtn then
+				v.Visible = _G.UIVisible
+			end
+		end
+	end
+end)
+
+closeBtn.MouseButton1Click:Connect(function()
+	gui:Destroy()
+end)
 
 -- FOV Circle
 local fov = Drawing.new("Circle")
@@ -169,7 +203,6 @@ RunService.RenderStepped:Connect(function()
 	fov.Position = Vector2.new(Mouse.X, Mouse.Y + 36)
 	fov.Radius = _G.FOVSize
 
-	-- ESP Box
 	if _G.ESP then
 		for plr, box in pairs(ESPBoxes) do
 			if plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
@@ -187,7 +220,6 @@ RunService.RenderStepped:Connect(function()
 		end
 	end
 
-	-- Aimbot
 	if _G.Aimbot then
 		local target = getClosest()
 		if target then
