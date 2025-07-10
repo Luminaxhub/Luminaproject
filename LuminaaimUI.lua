@@ -1,3 +1,4 @@
+-- Lumina Aimbot with Fixed ESP (v2)
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
@@ -5,15 +6,13 @@ local LocalPlayer = Players.LocalPlayer
 local Camera = workspace.CurrentCamera
 local Mouse = LocalPlayer:GetMouse()
 
--- Settings
 _G.Aimbot = true
-_G.ESP = true
+_G.ESP = false
 _G.FOVSize = 250
 _G.Sensitivity = 0.4
 _G.TargetPart = "Head"
 _G.UIVisible = true
 
--- UI
 local gui = Instance.new("ScreenGui", game.CoreGui)
 gui.Name = "LuminaAimbotUI"
 
@@ -25,7 +24,6 @@ frame.BackgroundTransparency = 0.2
 frame.BorderSizePixel = 0
 frame.Active = true
 frame.Draggable = true
-
 Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 6)
 
 local function newTextLabel(parent, text, pos)
@@ -38,7 +36,6 @@ local function newTextLabel(parent, text, pos)
 	label.Font = Enum.Font.Gotham
 	label.TextSize = 14
 	label.TextXAlignment = Enum.TextXAlignment.Left
-	label.TextWrapped = true
 	return label
 end
 
@@ -93,20 +90,24 @@ local function newDropdown(parent, text, options, ypos, callback)
 end
 
 newTextLabel(frame, "Aimbot : ON", UDim2.new(0, 10, 0, 10))
-newSlider(frame, 0.1, 1, _G.Sensitivity, function(val)
-	_G.Sensitivity = val
-end, UDim2.new(0, 10, 0, 30))
-
+newSlider(frame, 0.1, 1, _G.Sensitivity, function(val) _G.Sensitivity = val end, UDim2.new(0, 10, 0, 30))
 newTextLabel(frame, "FOV (%)", UDim2.new(0, 10, 0, 60))
-newSlider(frame, 50, 600, _G.FOVSize, function(val)
-	_G.FOVSize = val
-end, UDim2.new(0, 10, 0, 80))
+newSlider(frame, 50, 600, _G.FOVSize, function(val) _G.FOVSize = val end, UDim2.new(0, 10, 0, 80))
+newDropdown(frame, "Target Part", {"Head", "Torso"}, UDim2.new(0, 10, 0, 110), function(part) _G.TargetPart = part end)
 
-newDropdown(frame, "Target Part", {"Head", "Torso"}, UDim2.new(0, 10, 0, 110), function(part)
-	_G.TargetPart = part
+local espBtn = Instance.new("TextButton", frame)
+espBtn.Size = UDim2.new(1, -20, 0, 25)
+espBtn.Position = UDim2.new(0, 10, 0, 150)
+espBtn.Text = "ESP : OFF"
+espBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+espBtn.TextColor3 = Color3.new(1, 1, 1)
+espBtn.Font = Enum.Font.Gotham
+espBtn.TextSize = 14
+espBtn.BorderSizePixel = 0
+espBtn.MouseButton1Click:Connect(function()
+	_G.ESP = not _G.ESP
+	espBtn.Text = "ESP : " .. (_G.ESP and "ON" or "OFF")
 end)
-
-newTextLabel(frame, "ESP : ON", UDim2.new(0, 10, 0, 140))
 
 -- Minimize & Close
 local minimizeBtn = Instance.new("TextButton", frame)
@@ -117,16 +118,6 @@ minimizeBtn.TextColor3 = Color3.new(1,1,1)
 minimizeBtn.BackgroundTransparency = 1
 minimizeBtn.Font = Enum.Font.GothamBold
 minimizeBtn.TextSize = 18
-
-local closeBtn = Instance.new("TextButton", frame)
-closeBtn.Size = UDim2.new(0, 20, 0, 20)
-closeBtn.Position = UDim2.new(1, -25, 0, 0)
-closeBtn.Text = "X"
-closeBtn.TextColor3 = Color3.new(1,0.4,0.4)
-closeBtn.BackgroundTransparency = 1
-closeBtn.Font = Enum.Font.GothamBold
-closeBtn.TextSize = 14
-
 minimizeBtn.MouseButton1Click:Connect(function()
 	_G.UIVisible = not _G.UIVisible
 	for _, v in pairs(frame:GetChildren()) do
@@ -138,6 +129,14 @@ minimizeBtn.MouseButton1Click:Connect(function()
 	end
 end)
 
+local closeBtn = Instance.new("TextButton", frame)
+closeBtn.Size = UDim2.new(0, 20, 0, 20)
+closeBtn.Position = UDim2.new(1, -25, 0, 0)
+closeBtn.Text = "X"
+closeBtn.TextColor3 = Color3.new(1, 0.4, 0.4)
+closeBtn.BackgroundTransparency = 1
+closeBtn.Font = Enum.Font.GothamBold
+closeBtn.TextSize = 14
 closeBtn.MouseButton1Click:Connect(function()
 	gui:Destroy()
 end)
@@ -145,9 +144,9 @@ end)
 -- FOV Circle
 local fov = Drawing.new("Circle")
 fov.Color = Color3.new(1, 1, 1)
-fov.Thickness = 1.2
+fov.Thickness = 1.5
 fov.Filled = false
-fov.Transparency = 0.5
+fov.Transparency = 1
 fov.Visible = true
 
 -- ESP Boxes
@@ -181,7 +180,7 @@ Players.PlayerRemoving:Connect(function(p)
 	end
 end)
 
--- Logic
+-- Aimbot Logic
 local function getClosest()
 	local closest, dist = nil, math.huge
 	for _, plr in pairs(Players:GetPlayers()) do
@@ -199,13 +198,19 @@ local function getClosest()
 	return closest
 end
 
+-- ✅ FIXED ESP saat musuh mati
 RunService.RenderStepped:Connect(function()
 	fov.Position = Vector2.new(Mouse.X, Mouse.Y + 36)
 	fov.Radius = _G.FOVSize
+	fov.Visible = true
 
 	if _G.ESP then
 		for plr, box in pairs(ESPBoxes) do
-			if plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+			if plr.Character 
+			and plr.Character:FindFirstChild("Humanoid") 
+			and plr.Character.Humanoid.Health > 0 
+			and plr.Character:FindFirstChild("HumanoidRootPart") then
+
 				local root = plr.Character.HumanoidRootPart
 				local pos, visible = Camera:WorldToViewportPoint(root.Position)
 				if visible then
@@ -216,7 +221,13 @@ RunService.RenderStepped:Connect(function()
 				else
 					box.Visible = false
 				end
+			else
+				box.Visible = false
 			end
+		end
+	else
+		for _, box in pairs(ESPBoxes) do
+			box.Visible = false
 		end
 	end
 
