@@ -1,0 +1,198 @@
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
+local Camera = workspace.CurrentCamera
+local UserInputService = game:GetService("UserInputService")
+
+local ESPEnabled = true
+local TeamCheck = true
+
+local gui = Instance.new("ScreenGui", game.CoreGui)
+gui.Name = "Luminaprojects ESP"
+
+local main = Instance.new("Frame", gui)
+main.Size = UDim2.new(0, 240, 0, 270)
+main.Position = UDim2.new(0, 20, 0, 100)
+main.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+main.BorderSizePixel = 0
+
+-- Title
+local title = Instance.new("TextLabel", main)
+title.Size = UDim2.new(1, 0, 0, 30)
+title.BackgroundTransparency = 1
+title.Text = "🎯 ESP MENU"
+title.TextColor3 = Color3.fromRGB(255, 255, 255)
+title.Font = Enum.Font.GothamBold
+title.TextSize = 18
+
+-- ESP Toggle
+local toggleESPText = Instance.new("TextLabel", main)
+toggleESPText.Position = UDim2.new(0, 10, 0, 40)
+toggleESPText.Size = UDim2.new(0, 100, 0, 20)
+toggleESPText.Text = "ESP :"
+toggleESPText.BackgroundTransparency = 1
+toggleESPText.TextColor3 = Color3.fromRGB(255, 255, 255)
+toggleESPText.Font = Enum.Font.Gotham
+toggleESPText.TextSize = 14
+toggleESPText.TextXAlignment = Enum.TextXAlignment.Left
+
+local toggleESP = Instance.new("TextButton", main)
+toggleESP.Position = UDim2.new(1, -60, 0, 40)
+toggleESP.Size = UDim2.new(0, 50, 0, 20)
+toggleESP.Text = "ON"
+toggleESP.BackgroundColor3 = Color3.fromRGB(50, 200, 100)
+toggleESP.TextColor3 = Color3.fromRGB(255, 255, 255)
+
+toggleESP.MouseButton1Click:Connect(function()
+	ESPEnabled = not ESPEnabled
+	toggleESP.Text = ESPEnabled and "ON" or "OFF"
+	toggleESP.BackgroundColor3 = ESPEnabled and Color3.fromRGB(50, 200, 100) or Color3.fromRGB(200, 50, 50)
+end)
+
+-- Text di bawah ESP
+local bottomText = Instance.new("TextLabel", main)
+bottomText.Position = UDim2.new(0, 10, 0, 65)
+bottomText.Size = UDim2.new(1, -20, 0, 20)
+bottomText.Text = "🔧 More Setting"
+bottomText.BackgroundTransparency = 1
+bottomText.TextColor3 = Color3.fromRGB(200, 200, 255)
+bottomText.Font = Enum.Font.GothamBold
+bottomText.TextSize = 14
+bottomText.TextXAlignment = Enum.TextXAlignment.Left
+
+-- Walkspeed Custom
+local walkspeed = Instance.new("TextBox", main)
+walkspeed.Position = UDim2.new(0, 10, 0, 95)
+walkspeed.Size = UDim2.new(1, -20, 0, 25)
+walkspeed.PlaceholderText = "Walkspeed (default 16)"
+walkspeed.Text = ""
+walkspeed.Font = Enum.Font.Gotham
+walkspeed.TextColor3 = Color3.new(1, 1, 1)
+walkspeed.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+
+walkspeed.FocusLost:Connect(function()
+	local val = tonumber(walkspeed.Text)
+	if val then
+		LocalPlayer.Character.Humanoid.WalkSpeed = val
+	end
+end)
+
+-- Jumphigh Custom
+local jumppower = Instance.new("TextBox", main)
+jumppower.Position = UDim2.new(0, 10, 0, 130)
+jumppower.Size = UDim2.new(1, -20, 0, 25)
+jumppower.PlaceholderText = "JumpPower (default 50)"
+jumppower.Text = ""
+jumppower.Font = Enum.Font.Gotham
+jumppower.TextColor3 = Color3.new(1, 1, 1)
+jumppower.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+
+jumppower.FocusLost:Connect(function()
+	local val = tonumber(jumppower.Text)
+	if val then
+		LocalPlayer.Character.Humanoid.JumpPower = val
+	end
+end)
+
+-- TP Tool (auto re-apply after death)
+local function giveTPTool()
+	local tool = Instance.new("Tool")
+	tool.RequiresHandle = false
+	tool.Name = "TP Tool"
+
+	tool.Activated:Connect(function()
+		local mouse = LocalPlayer:GetMouse()
+		if mouse then
+			local targetPos = mouse.Hit.p
+			if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+				LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(targetPos + Vector3.new(0, 5, 0))
+			end
+		end
+	end)
+
+	tool.Parent = LocalPlayer.Backpack
+end
+
+giveTPTool()
+LocalPlayer.CharacterAdded:Connect(function()
+	wait(1)
+	giveTPTool()
+end)
+
+-- Minimize & Close
+local minimize = Instance.new("TextButton", main)
+minimize.Position = UDim2.new(1, -25, 0, 0)
+minimize.Size = UDim2.new(0, 25, 0, 25)
+minimize.Text = "-"
+minimize.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+minimize.TextColor3 = Color3.new(1, 1, 1)
+local minimized = false
+
+minimize.MouseButton1Click:Connect(function()
+	minimized = not minimized
+	for i, v in pairs(main:GetChildren()) do
+		if v:IsA("TextLabel") or v:IsA("TextButton") or v:IsA("TextBox") then
+			if v ~= minimize and v ~= title then
+				v.Visible = not minimized
+			end
+		end
+	end
+end)
+
+local close = Instance.new("TextButton", main)
+close.Position = UDim2.new(1, -50, 0, 0)
+close.Size = UDim2.new(0, 25, 0, 25)
+close.Text = "X"
+close.BackgroundColor3 = Color3.fromRGB(150, 50, 50)
+close.TextColor3 = Color3.new(1, 1, 1)
+close.MouseButton1Click:Connect(function()
+	gui:Destroy()
+end)
+
+-- ESP Logic
+local function createESP(player)
+	local box = Drawing.new("Square")
+	box.Color = Color3.fromRGB(255, 255, 255)
+	box.Thickness = 2
+	box.Transparency = 1
+	box.Filled = false
+
+	RunService.RenderStepped:Connect(function()
+		if not ESPEnabled or not player or not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then
+			box.Visible = false
+			return
+		end
+		if TeamCheck and player.Team == LocalPlayer.Team then
+			box.Visible = false
+			return
+		end
+		local rootPart = player.Character:FindFirstChild("HumanoidRootPart")
+		local human = player.Character:FindFirstChildOfClass("Humanoid")
+		if not rootPart or not human or human.Health <= 0 then
+			box.Visible = false
+			return
+		end
+
+		local pos, onscreen = Camera:WorldToViewportPoint(rootPart.Position)
+		if onscreen then
+			local size = Vector2.new(50, 100) / (rootPart.Position - Camera.CFrame.Position).Magnitude * 3
+			box.Size = size
+			box.Position = Vector2.new(pos.X - size.X / 2, pos.Y - size.Y / 2)
+			box.Visible = true
+		else
+			box.Visible = false
+		end
+	end)
+end
+
+for _, player in ipairs(Players:GetPlayers()) do
+	if player ~= LocalPlayer then
+		createESP(player)
+	end
+end
+
+Players.PlayerAdded:Connect(function(player)
+	if player ~= LocalPlayer then
+		createESP(player)
+	end
+end)
