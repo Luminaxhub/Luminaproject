@@ -1,119 +1,24 @@
--- UI Loadstring ESP Circle & Box with Healthbar - Luminaprojects (Fixed Version)
+-- UI Loadstring ESP Circle & Box with Healthbar - Luminaprojects
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Camera = workspace.CurrentCamera
 local LocalPlayer = Players.LocalPlayer
 
--- ESP CIRCLE
+-- ESP Data
 local CircleESP = {}
-local function createCircle(player)
-	local circle = Drawing.new("Circle")
-	circle.Thickness = 1
-	circle.Radius = 10
-	circle.Filled = true
-	circle.Transparency = 1
-	circle.Color = Color3.new(1, 1, 1)
-	circle.Visible = false
-	CircleESP[player] = circle
-end
-
--- ESP BOX
-local ESPBoxes = {}
+local BoxESP = {}
 local HealthBars = {}
-local function createESP(player)
-	local box = Drawing.new("Square")
-	box.Thickness = 1
-	box.Transparency = 0.9
-	box.Color = Color3.new(1, 1, 1)
-	box.Filled = false
-	box.Visible = false
-	ESPBoxes[player] = box
 
-	local health = Drawing.new("Square")
-	health.Thickness = 2
-	health.Transparency = 0.9
-	health.Filled = true
-	health.Visible = false
-	HealthBars[player] = health
-end
-
-for _, player in pairs(Players:GetPlayers()) do
-	if player ~= LocalPlayer then
-		createCircle(player)
-		createESP(player)
-	end
-end
-
-Players.PlayerAdded:Connect(function(player)
-	if player ~= LocalPlayer then
-		createCircle(player)
-		createESP(player)
-	end
-end)
-
-Players.PlayerRemoving:Connect(function(player)
-	if CircleESP[player] then CircleESP[player]:Remove() CircleESP[player] = nil end
-	if ESPBoxes[player] then ESPBoxes[player]:Remove() ESPBoxes[player] = nil end
-	if HealthBars[player] then HealthBars[player]:Remove() HealthBars[player] = nil end
-end)
-
-local showCircle = false
-local showBox = false
-RunService.RenderStepped:Connect(function()
-	for player, circle in pairs(CircleESP) do
-		local char = player.Character
-		if char and char:FindFirstChild("HumanoidRootPart") and char:FindFirstChild("Humanoid") and char.Humanoid.Health > 0 then
-			local root = char.HumanoidRootPart
-			local pos, visible = Camera:WorldToViewportPoint(root.Position)
-			if visible and showCircle then
-				circle.Position = Vector2.new(pos.X, pos.Y)
-				circle.Visible = true
-			else
-				circle.Visible = false
-			end
-		else
-			circle.Visible = false
-		end
-	end
-	for player, box in pairs(ESPBoxes) do
-		local char = player.Character
-		if char and char:FindFirstChild("HumanoidRootPart") and char:FindFirstChild("Humanoid") and char.Humanoid.Health > 0 then
-			local hrp = char.HumanoidRootPart
-			local pos, visible = Camera:WorldToViewportPoint(hrp.Position)
-			if visible and showBox then
-				local distance = (Camera.CFrame.Position - hrp.Position).Magnitude
-				local scale = 50 / distance
-				box.Size = Vector2.new(20 * scale, 40 * scale)
-				box.Position = Vector2.new(pos.X - box.Size.X / 2, pos.Y - box.Size.Y / 2)
-				box.Visible = true
-
-				local hp = char.Humanoid.Health / char.Humanoid.MaxHealth
-				local healthBar = HealthBars[player]
-				healthBar.Size = Vector2.new(box.Size.X * hp, 2)
-				healthBar.Position = Vector2.new(box.Position.X, box.Position.Y + box.Size.Y + 2)
-				healthBar.Color = Color3.fromRGB(0, 255, 0)
-				healthBar.Visible = true
-			else
-				box.Visible = false
-				HealthBars[player].Visible = false
-			end
-		else
-			box.Visible = false
-			HealthBars[player].Visible = false
-		end
-	end
-end)
-
--- UI
+-- Create UI
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "Universal Esp"
+ScreenGui.Name = "Universal - Esp"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
 local MainFrame = Instance.new("Frame")
 MainFrame.Name = "MainFrame"
 MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-MainFrame.Size = UDim2.new(0, 300, 0, 220)
+MainFrame.Size = UDim2.new(0, 240, 0, 30)
 MainFrame.Position = UDim2.new(0.7, 0, 0.2, 0)
 MainFrame.Active = true
 MainFrame.Draggable = true
@@ -122,8 +27,18 @@ MainFrame.BorderSizePixel = 0
 MainFrame.Parent = ScreenGui
 Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 10)
 
+local ExpandFrame = Instance.new("Frame", ScreenGui)
+ExpandFrame.Name = "ExpandFrame"
+ExpandFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+ExpandFrame.Size = UDim2.new(0, 240, 0, 200)
+ExpandFrame.Position = UDim2.new(0.7, 0, 0.2, 30)
+ExpandFrame.BackgroundTransparency = 0.2
+ExpandFrame.BorderSizePixel = 0
+ExpandFrame.Visible = true
+Instance.new("UICorner", ExpandFrame).CornerRadius = UDim.new(0, 10)
+
 local Title = Instance.new("TextLabel", MainFrame)
-Title.Text = "Universal Esp"
+Title.Text = "Universal - Esp"
 Title.Size = UDim2.new(1, -40, 0, 30)
 Title.Position = UDim2.new(0, 10, 0, 0)
 Title.Font = Enum.Font.GothamBold
@@ -141,9 +56,7 @@ CloseBtn.Font = Enum.Font.GothamBold
 CloseBtn.TextColor3 = Color3.new(1, 1, 1)
 CloseBtn.TextSize = 14
 CloseBtn.MouseButton1Click:Connect(function()
-	MainFrame:TweenSize(UDim2.new(0, 0, 0, 0), "Out", "Sine", 0.3, true)
-	task.wait(0.3)
-	MainFrame.Visible = false
+	ScreenGui:Destroy()
 end)
 
 local MinBtn = Instance.new("TextButton", MainFrame)
@@ -158,22 +71,24 @@ MinBtn.TextSize = 14
 local minimized = false
 MinBtn.MouseButton1Click:Connect(function()
 	minimized = not minimized
-	MainFrame:TweenSize(minimized and UDim2.new(0, 150, 0, 30) or UDim2.new(0, 300, 0, 220), "Out", "Sine", 0.3, true)
+	ExpandFrame.Visible = not minimized
+	MainFrame.Size = UDim2.new(0, 240, 0, minimized and 30 or 30)
 end)
 
-local function createToggle(text, posY, callback)
-	local Label = Instance.new("TextLabel", MainFrame)
-	Label.Text = text
-	Label.Position = UDim2.new(0, 10, 0, posY)
+-- Toggle
+local function createToggle(name, yPos, callback)
+	local Label = Instance.new("TextLabel", ExpandFrame)
+	Label.Text = name
+	Label.Position = UDim2.new(0, 10, 0, yPos)
 	Label.Size = UDim2.new(0.5, 0, 0, 25)
 	Label.BackgroundTransparency = 1
 	Label.Font = Enum.Font.Gotham
 	Label.TextColor3 = Color3.new(1, 1, 1)
 	Label.TextSize = 13
 
-	local Toggle = Instance.new("TextButton", MainFrame)
+	local Toggle = Instance.new("TextButton", ExpandFrame)
 	Toggle.Size = UDim2.new(0, 50, 0, 20)
-	Toggle.Position = UDim2.new(1, -60, 0, posY + 2)
+	Toggle.Position = UDim2.new(1, -60, 0, yPos + 2)
 	Toggle.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 	Toggle.Text = ""
 	Toggle.AutoButtonColor = false
@@ -193,12 +108,64 @@ local function createToggle(text, posY, callback)
 	end)
 end
 
-createToggle("Esp Circle 🛡️", 40, function(state) showCircle = state end)
-createToggle("Esp Box 🛡️", 75, function(state) showBox = state end)
+createToggle("Esp Circle 🛡️", 10, function(on)
+	for _, player in ipairs(Players:GetPlayers()) do
+		if player ~= LocalPlayer then
+			if on and not CircleESP[player] then
+				local circ = Drawing.new("Circle")
+				circ.Radius = 10
+				circ.Filled = true
+				circ.Thickness = 1
+				circ.Color = Color3.new(1, 1, 1)
+				circ.Visible = false
+				CircleESP[player] = circ
 
-local credit = Instance.new("TextLabel", MainFrame)
+				local bar = Drawing.new("Line")
+				bar.Thickness = 2
+				bar.Color = Color3.new(0, 1, 0)
+				bar.Visible = false
+				HealthBars[player] = bar
+			elseif not on and CircleESP[player] then
+				CircleESP[player]:Remove()
+				HealthBars[player]:Remove()
+				CircleESP[player] = nil
+				HealthBars[player] = nil
+			end
+		end
+	end
+end)
+
+createToggle("Esp Box 🛡️", 45, function(on)
+	for _, player in ipairs(Players:GetPlayers()) do
+		if player ~= LocalPlayer then
+			if on and not BoxESP[player] then
+				local box = Drawing.new("Square")
+				box.Thickness = 1
+				box.Transparency = 0.9
+				box.Color = Color3.new(1, 1, 1)
+				box.Filled = false
+				box.Visible = false
+				BoxESP[player] = box
+
+				local bar = Drawing.new("Line")
+				bar.Thickness = 2
+				bar.Color = Color3.new(0, 1, 0)
+				bar.Visible = false
+				HealthBars[player] = bar
+			elseif not on and BoxESP[player] then
+				BoxESP[player]:Remove()
+				HealthBars[player]:Remove()
+				BoxESP[player] = nil
+				HealthBars[player] = nil
+			end
+		end
+	end
+end)
+
+-- RGB Credit
+local credit = Instance.new("TextLabel", ExpandFrame)
 credit.Text = "Script by - Luminaprojects"
-credit.Position = UDim2.new(0, 10, 1, -25)
+credit.Position = UDim2.new(0, 10, 0, 80)
 credit.Size = UDim2.new(1, -20, 0, 20)
 credit.Font = Enum.Font.Gotham
 credit.TextSize = 12
@@ -212,4 +179,77 @@ spawn(function()
 			wait(0.03)
 		end
 	end
+end)
+
+-- Update ESP
+RunService.RenderStepped:Connect(function()
+	for player, circle in pairs(CircleESP) do
+		if player.Character and player.Character:FindFirstChild("HumanoidRootPart") and player.Character:FindFirstChild("Humanoid") and player.Character.Humanoid.Health > 0 then
+			local pos, visible = Camera:WorldToViewportPoint(player.Character.HumanoidRootPart.Position)
+			if visible then
+				circle.Position = Vector2.new(pos.X, pos.Y)
+				circle.Visible = true
+
+				local hp = player.Character.Humanoid.Health / player.Character.Humanoid.MaxHealth
+				local bar = HealthBars[player]
+				bar.From = Vector2.new(pos.X - 15, pos.Y + 15)
+				bar.To = Vector2.new(pos.X - 15 + (30 * hp), pos.Y + 15)
+				bar.Visible = true
+			else
+				circle.Visible = false
+				HealthBars[player].Visible = false
+			end
+		else
+			circle.Visible = false
+			if HealthBars[player] then
+				HealthBars[player].Visible = false
+			end
+		end
+	end
+	for player, box in pairs(BoxESP) do
+		if player.Character and player.Character:FindFirstChild("HumanoidRootPart") and player.Character:FindFirstChild("Humanoid") and player.Character.Humanoid.Health > 0 then
+			local hrp = player.Character.HumanoidRootPart
+			local pos, visible = Camera:WorldToViewportPoint(hrp.Position)
+			if visible then
+				local dist = (Camera.CFrame.Position - hrp.Position).Magnitude
+				local scale = 50 / dist
+				box.Size = Vector2.new(20 * scale, 40 * scale)
+				box.Position = Vector2.new(pos.X - box.Size.X / 2, pos.Y - box.Size.Y / 2)
+				box.Visible = true
+
+				local hp = player.Character.Humanoid.Health / player.Character.Humanoid.MaxHealth
+				local bar = HealthBars[player]
+				bar.From = Vector2.new(pos.X - 15, pos.Y + 22)
+				bar.To = Vector2.new(pos.X - 15 + (30 * hp), pos.Y + 22)
+				bar.Visible = true
+			else
+				box.Visible = false
+				HealthBars[player].Visible = false
+			end
+		else
+			box.Visible = false
+			if HealthBars[player] then
+				HealthBars[player].Visible = false
+			end
+		end
+	end
+end)
+
+Players.PlayerRemoving:Connect(function(player)
+	if CircleESP[player] then
+		CircleESP[player]:Remove()
+		CircleESP[player] = nil
+	end
+	if BoxESP[player] then
+		BoxESP[player]:Remove()
+		BoxESP[player] = nil
+	end
+	if HealthBars[player] then
+		HealthBars[player]:Remove()
+		HealthBars[player] = nil
+	end
+end)
+
+Players.PlayerAdded:Connect(function(player)
+	-- Recreate ESP when new player joins
 end)
