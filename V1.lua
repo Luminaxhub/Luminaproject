@@ -5,22 +5,37 @@ local Camera = workspace.CurrentCamera
 local LocalPlayer = Players.LocalPlayer
 
 -- Create UI
-local ScreenGui = Instance.new("ScreenGui", LocalPlayer:WaitForChild("PlayerGui"))
-ScreenGui.Name = "UNIVERSAL ESP"
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "Universal_ESP"
 ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
-local MainFrame = Instance.new("Frame", ScreenGui)
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "MainFrame"
 MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-MainFrame.Size = UDim2.new(0, 300, 0, 150)
+MainFrame.Size = UDim2.new(0, 300, 0, 220)
 MainFrame.Position = UDim2.new(0.7, 0, 0.2, 0)
 MainFrame.Active = true
 MainFrame.Draggable = true
 MainFrame.BackgroundTransparency = 0.2
 MainFrame.BorderSizePixel = 0
+MainFrame.Parent = ScreenGui
 Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 10)
 
+-- Scrolling Area
+local Scroll = Instance.new("ScrollingFrame", MainFrame)
+Scroll.Size = UDim2.new(1, 0, 1, -30)
+Scroll.Position = UDim2.new(0, 0, 0, 30)
+Scroll.CanvasSize = UDim2.new(0, 0, 0, 300)
+Scroll.ScrollBarThickness = 4
+Scroll.BackgroundTransparency = 1
+Scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+Scroll.CanvasPosition = Vector2.new(0, 0)
+Scroll.Name = "Scroll"
+
+-- Title
 local Title = Instance.new("TextLabel", MainFrame)
-Title.Text = "UNIVERSAL ESP"
+Title.Text = "Universal_ESP"
 Title.Size = UDim2.new(1, -40, 0, 30)
 Title.Position = UDim2.new(0, 10, 0, 0)
 Title.Font = Enum.Font.GothamBold
@@ -39,7 +54,9 @@ CloseBtn.Font = Enum.Font.GothamBold
 CloseBtn.TextColor3 = Color3.new(1, 1, 1)
 CloseBtn.TextSize = 14
 CloseBtn.MouseButton1Click:Connect(function()
-	MainFrame.Visible = false
+	MainFrame:TweenSize(UDim2.new(0, 0, 0, 0), "Out", "Sine", 0.3, true, function()
+		MainFrame.Visible = false
+	end)
 end)
 
 -- Minimize Button
@@ -55,64 +72,53 @@ MinBtn.TextSize = 14
 local contentVisible = true
 MinBtn.MouseButton1Click:Connect(function()
 	contentVisible = not contentVisible
-	for _, obj in pairs(MainFrame:GetChildren()) do
-		if obj ~= Title and obj ~= CloseBtn and obj ~= MinBtn then
-			obj.Visible = contentVisible
-		end
-	end
+	Scroll:TweenSize(UDim2.new(1, 0, contentVisible and 1 or 0, contentVisible and -30 or 0), "Out", "Sine", 0.25, true)
 end)
 
--- ESP Circle Toggle
-local CircleLabel = Instance.new("TextLabel", MainFrame)
-CircleLabel.Text = "Esp Circle 🛡️"
-CircleLabel.Position = UDim2.new(0, 10, 0, 40)
-CircleLabel.Size = UDim2.new(0.5, 0, 0, 25)
-CircleLabel.BackgroundTransparency = 1
-CircleLabel.Font = Enum.Font.Gotham
-CircleLabel.TextColor3 = Color3.new(1,1,1)
-CircleLabel.TextSize = 13
+-- Toggle Function
+local function createToggle(parent, labelText, posY, callback)
+	local Label = Instance.new("TextLabel", parent)
+	Label.Text = labelText
+	Label.Position = UDim2.new(0, 10, 0, posY)
+	Label.Size = UDim2.new(0.5, 0, 0, 25)
+	Label.BackgroundTransparency = 1
+	Label.Font = Enum.Font.Gotham
+	Label.TextColor3 = Color3.new(1, 1, 1)
+	Label.TextSize = 13
 
-local CircleToggle = Instance.new("TextButton", MainFrame)
-CircleToggle.Size = UDim2.new(0, 50, 0, 20)
-CircleToggle.Position = UDim2.new(1, -60, 0, 42)
-CircleToggle.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-CircleToggle.Text = ""
-CircleToggle.AutoButtonColor = false
-Instance.new("UICorner", CircleToggle).CornerRadius = UDim.new(1,0)
+	local Toggle = Instance.new("TextButton", parent)
+	Toggle.Size = UDim2.new(0, 50, 0, 20)
+	Toggle.Position = UDim2.new(1, -60, 0, posY + 2)
+	Toggle.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+	Toggle.Text = ""
+	Toggle.AutoButtonColor = false
+	Instance.new("UICorner", Toggle).CornerRadius = UDim.new(1, 0)
 
-local CircleDot = Instance.new("Frame", CircleToggle)
-CircleDot.Size = UDim2.new(0.5, -2, 1, -4)
-CircleDot.Position = UDim2.new(0, 2, 0, 2)
-CircleDot.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-Instance.new("UICorner", CircleDot).CornerRadius = UDim.new(1,0)
+	local Dot = Instance.new("Frame", Toggle)
+	Dot.Size = UDim2.new(0.5, -2, 1, -4)
+	Dot.Position = UDim2.new(0, 2, 0, 2)
+	Dot.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	Instance.new("UICorner", Dot).CornerRadius = UDim.new(1, 0)
 
-local circleEnabled = false
-CircleToggle.MouseButton1Click:Connect(function()
-	circleEnabled = not circleEnabled
-	CircleDot:TweenPosition(UDim2.new(circleEnabled and 0.5 or 0, 2, 0, 2), "Out", "Sine", 0.2, true)
-end)
+	local state = false
+	Toggle.MouseButton1Click:Connect(function()
+		state = not state
+		Dot:TweenPosition(UDim2.new(state and 0.5 or 0, 2, 0, 2), "Out", "Sine", 0.2, true)
+		callback(state)
+	end)
 
--- ESP Box Toggle
-local BoxLabel = CircleLabel:Clone()
-BoxLabel.Text = "Esp Box 🛡️"
-BoxLabel.Position = UDim2.new(0, 10, 0, 75)
-BoxLabel.Parent = MainFrame
+	return posY + 35
+end
 
-local BoxToggle = CircleToggle:Clone()
-BoxToggle.Position = UDim2.new(1, -60, 0, 77)
-BoxToggle.Parent = MainFrame
+-- ESP Toggle Section
+local posY = 10
+posY = createToggle(Scroll, "Esp Circle 🛡️", posY, function(on) print("Circle", on) end)
+posY = createToggle(Scroll, "Esp Box 🛡️", posY, function(on) print("Box", on) end)
 
-local BoxDot = BoxToggle:FindFirstChild("Frame")
-local boxEnabled = false
-BoxToggle.MouseButton1Click:Connect(function()
-	boxEnabled = not boxEnabled
-	BoxDot:TweenPosition(UDim2.new(boxEnabled and 0.5 or 0, 2, 0, 2), "Out", "Sine", 0.2, true)
-end)
-
--- Credit Text RGB
-local credit = Instance.new("TextLabel", MainFrame)
-credit.Text = "⚙️ Script by - Luminaprojects"
-credit.Position = UDim2.new(0, 10, 1, -25)
+-- RGB Credit
+local credit = Instance.new("TextLabel", Scroll)
+credit.Text = "Script by - Luminaprojects"
+credit.Position = UDim2.new(0, 10, 0, posY)
 credit.Size = UDim2.new(1, -20, 0, 20)
 credit.Font = Enum.Font.Gotham
 credit.TextSize = 12
@@ -128,112 +134,5 @@ spawn(function()
 	end
 end)
 
--- ESP Circle + Health Bar
-local CircleESP, HealthBar = {}, {}
-local function createCircle(player)
-	local circle = Drawing.new("Circle")
-	circle.Thickness, circle.Radius, circle.Filled = 1, 10, true
-	circle.Transparency = 1
-	circle.Color = Color3.new(1, 1, 1)
-	circle.Visible = false
-	CircleESP[player] = circle
-
-	local health = Drawing.new("Square")
-	health.Filled = true
-	health.Thickness = 1
-	health.Transparency = 0.9
-	health.Color = Color3.new(0, 1, 0)
-	health.Visible = false
-	HealthBar[player] = health
-end
-
-for _, p in pairs(Players:GetPlayers()) do if p ~= LocalPlayer then createCircle(p) end end
-Players.PlayerAdded:Connect(function(p) if p ~= LocalPlayer then createCircle(p) end end)
-Players.PlayerRemoving:Connect(function(p)
-	if CircleESP[p] then CircleESP[p]:Remove(); CircleESP[p] = nil end
-	if HealthBar[p] then HealthBar[p]:Remove(); HealthBar[p] = nil end
-end)
-
--- ESP Box + Health Bar
-local ESPBoxes, BoxHealth = {}, {}
-local function createBox(player)
-	local box = Drawing.new("Square")
-	box.Thickness = 1
-	box.Transparency = 0.9
-	box.Color = Color3.new(1, 1, 1)
-	box.Filled = false
-	box.Visible = false
-	ESPBoxes[player] = box
-
-	local hp = Drawing.new("Square")
-	hp.Filled = true
-	hp.Thickness = 1
-	hp.Transparency = 0.9
-	hp.Color = Color3.new(0, 1, 0)
-	hp.Visible = false
-	BoxHealth[player] = hp
-end
-
-for _, p in pairs(Players:GetPlayers()) do if p ~= LocalPlayer then createBox(p) end end
-Players.PlayerAdded:Connect(function(p) if p ~= LocalPlayer then createBox(p) end end)
-Players.PlayerRemoving:Connect(function(p)
-	if ESPBoxes[p] then ESPBoxes[p]:Remove(); ESPBoxes[p] = nil end
-	if BoxHealth[p] then BoxHealth[p]:Remove(); BoxHealth[p] = nil end
-end)
-
-RunService.RenderStepped:Connect(function()
-	for p, circle in pairs(CircleESP) do
-		local char = p.Character
-		if circleEnabled and char and char:FindFirstChild("HumanoidRootPart") and char:FindFirstChild("Humanoid") and char.Humanoid.Health > 0 then
-			local root = char.HumanoidRootPart
-			local pos, vis = Camera:WorldToViewportPoint(root.Position)
-			if vis then
-				circle.Position = Vector2.new(pos.X, pos.Y)
-				circle.Visible = true
-
-				local hp = HealthBar[p]
-				local healthPercent = math.clamp(char.Humanoid.Health / char.Humanoid.MaxHealth, 0, 1)
-				local barW = 40 * healthPercent
-				hp.Size = Vector2.new(barW, 3)
-				hp.Position = Vector2.new(pos.X - barW/2, pos.Y + 10)
-				hp.Color = Color3.fromRGB(255 * (1 - healthPercent), 255 * healthPercent, 0)
-				hp.Visible = true
-			else
-				circle.Visible = false
-				HealthBar[p].Visible = false
-			end
-		else
-			circle.Visible = false
-			HealthBar[p].Visible = false
-		end
-	end
-
-	for p, box in pairs(ESPBoxes) do
-		local char = p.Character
-		if boxEnabled and char and char:FindFirstChild("HumanoidRootPart") and char:FindFirstChild("Humanoid") and char.Humanoid.Health > 0 then
-			local hrp = char.HumanoidRootPart
-			local pos, vis = Camera:WorldToViewportPoint(hrp.Position)
-			if vis then
-				local dist = (Camera.CFrame.Position - hrp.Position).Magnitude
-				local scale = 50 / dist
-				local w, h = 20 * scale, 40 * scale
-				box.Size = Vector2.new(w, h)
-				box.Position = Vector2.new(pos.X - w/2, pos.Y - h/2)
-				box.Visible = true
-
-				local hp = BoxHealth[p]
-				local healthPercent = math.clamp(char.Humanoid.Health / char.Humanoid.MaxHealth, 0, 1)
-				hp.Size = Vector2.new(w * healthPercent, 4)
-				hp.Position = Vector2.new(pos.X - w/2, pos.Y + h/2 + 2)
-				hp.Color = Color3.fromRGB(255 * (1 - healthPercent), 255 * healthPercent, 0)
-				hp.Visible = true
-			else
-				box.Visible = false
-				BoxHealth[p].Visible = false
-			end
-		else
-			box.Visible = false
-			BoxHealth[p].Visible = false
-		end
-	end
-end)
+-- Finalize scroll size
+Scroll.CanvasSize = UDim2.new(0, 0, 0, posY + 40)
