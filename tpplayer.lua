@@ -1,4 +1,4 @@
--- Enhanced Player TP GUI with Avatar Thumbnails and Username beside image
+-- Fixed Player TP GUI with Avatar and Username showing correctly
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local UserInputService = game:GetService("UserInputService")
@@ -123,8 +123,12 @@ local function refreshPlayerList()
 			nameLabel.TextSize = 16
 			nameLabel.Parent = item
 
-			local content, isReady = Players:GetUserThumbnailAsync(player.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size100x100)
-			thumb.Image = content
+			local success, content = pcall(function()
+				return Players:GetUserThumbnailAsync(player.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size100x100)
+			end)
+			if success and content then
+				thumb.Image = content
+			end
 
 			item.InputBegan:Connect(function(input)
 				if input.UserInputType == Enum.UserInputType.MouseButton1 then
