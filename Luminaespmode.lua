@@ -55,9 +55,9 @@ MinBtn.TextColor3 = Color3.new(1, 1, 1)
 MinBtn.TextSize = 14
 
 local ContentFrame = Instance.new("Frame")
-ContentFrame.Parent = MainFrame -- Fix agar ngikut saat drag
+ContentFrame.Parent = MainFrame -- drag ikut atas
 ContentFrame.Position = UDim2.new(0, 0, 1, 5)
-ContentFrame.Size = UDim2.new(1, 0, 0, 180)
+ContentFrame.Size = UDim2.new(0, 300, 0, 200)
 ContentFrame.BackgroundTransparency = 1
 ContentFrame.Name = "ContentFrame"
 
@@ -126,83 +126,90 @@ MinBtn.MouseButton1Click:Connect(function()
 	ContentFrame.Visible = not isMinimized
 end)
 
--- ESP ENGINE
+-- ESP Engine
 local function createESP(player)
-	local box = Drawing.new("Square")
-	box.Thickness = 1
-	box.Color = Color3.fromRGB(255, 255, 255)
-	box.Transparency = 1
-	box.Visible = false
+	local box, tracer, nameTag, circle, healthBar
 
-	local tracer = Drawing.new("Line")
+	box = Drawing.new("Square")
+	box.Thickness = 1
+	box.Color = Color3.fromRGB(0, 255, 0)
+	box.Transparency = 1
+	box.Filled = false
+
+	tracer = Drawing.new("Line")
 	tracer.Thickness = 1
 	tracer.Color = Color3.fromRGB(255, 255, 255)
 	tracer.Transparency = 1
-	tracer.Visible = false
 
-	local nameTag = Drawing.new("Text")
+	nameTag = Drawing.new("Text")
 	nameTag.Size = 13
 	nameTag.Center = true
 	nameTag.Outline = true
-	nameTag.Font = 2
-	nameTag.Color = Color3.fromRGB(255, 255, 255)
-	nameTag.Visible = false
+	nameTag.Color = Color3.new(1,1,1)
 
-	local healthBar = Drawing.new("Line")
+	circle = Drawing.new("Circle")
+	circle.Color = Color3.new(1,1,1)
+	circle.Thickness = 1
+	circle.Filled = false
+	circle.Transparency = 1
+	circle.NumSides = 30
+	circle.Radius = 6
+
+	healthBar = Drawing.new("Line")
+	healthBar.Color = Color3.new(0,1,0)
 	healthBar.Thickness = 2
-	healthBar.Color = Color3.fromRGB(0, 255, 0)
-	healthBar.Transparency = 1
-	healthBar.Visible = false
 
-	RunService.RenderStepped:Connect(function()
-		if not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") or not player.Character:FindFirstChild("Humanoid") then
+	local function update()
+		if not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then
 			box.Visible = false
 			tracer.Visible = false
 			nameTag.Visible = false
+			circle.Visible = false
 			healthBar.Visible = false
 			return
 		end
+		local hrp = player.Character.HumanoidRootPart
+		local pos, onScreen = Camera:WorldToViewportPoint(hrp.Position)
+		if not onScreen then box.Visible = false tracer.Visible = false nameTag.Visible = false circle.Visible = false healthBar.Visible = false return end
 
-		local root = player.Character.HumanoidRootPart
-		local pos, onScreen = Camera:WorldToViewportPoint(root.Position)
-		local head = player.Character:FindFirstChild("Head")
-		if onScreen then
-			local scale = 3
-			local sizeY = (Camera:WorldToViewportPoint(root.Position - Vector3.new(0, 3, 0)).Y - pos.Y) * scale
-			local sizeX = sizeY / 1.5
+		local size = Vector2.new(40, 60)
+		box.Size = size
+		box.Position = Vector2.new(pos.X - size.X/2, pos.Y - size.Y/2)
+		box.Visible = _G.BoxESP
 
-			box.Size = Vector2.new(sizeX, sizeY)
-			box.Position = Vector2.new(pos.X - sizeX / 2, pos.Y - sizeY / 2)
-			box.Visible = _G.BoxESP
+		tracer.From = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y)
+		tracer.To = Vector2.new(pos.X, pos.Y)
+		tracer.Visible = _G.TracerESP
 
-			tracer.From = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y)
-			tracer.To = Vector2.new(pos.X, pos.Y)
-			tracer.Visible = _G.TracerESP
+		nameTag.Position = Vector2.new(pos.X, pos.Y - 40)
+		nameTag.Text = player.Name .. " | " .. math.floor((LocalPlayer.Character.HumanoidRootPart.Position - hrp.Position).Magnitude) .. "m"
+		nameTag.Visible = _G.NametagESP
 
-			nameTag.Position = Vector2.new(pos.X, pos.Y - sizeY / 2 - 15)
-			nameTag.Text = player.Name .. " [" .. math.floor((root.Position - Camera.CFrame.Position).Magnitude) .. "m]"
-			nameTag.Visible = _G.NametagESP
+		circle.Position = Vector2.new(pos.X, pos.Y - 30)
+		circle.Visible = _G.CircleESP
 
-			healthBar.From = Vector2.new(pos.X - sizeX / 2 - 5, pos.Y + sizeY / 2)
-			healthBar.To = Vector2.new(pos.X - sizeX / 2 - 5, pos.Y + sizeY / 2 - (sizeY * (player.Character.Humanoid.Health / player.Character.Humanoid.MaxHealth)))
-			healthBar.Visible = _G.BoxESP
+		local hp = player.Character:FindFirstChildOfClass("Humanoid")
+		if hp then
+			local percent = hp.Health / hp.MaxHealth
+			healthBar.From = Vector2.new(pos.X - 25, pos.Y + 35)
+			healthBar.To = Vector2.new(pos.X - 25 + 50 * percent, pos.Y + 35)
+			healthBar.Visible = true
 		else
-			box.Visible = false
-			tracer.Visible = false
-			nameTag.Visible = false
 			healthBar.Visible = false
 		end
-	end)
+	end
+
+	RunService.RenderStepped:Connect(update)
 end
 
-for _, plr in ipairs(Players:GetPlayers()) do
-	if plr ~= LocalPlayer then
-		createESP(plr)
+for _, player in ipairs(Players:GetPlayers()) do
+	if player ~= LocalPlayer then
+		createESP(player)
 	end
 end
 
-Players.PlayerAdded:Connect(function(plr)
-	if plr ~= LocalPlayer then
-		createESP(plr)
+Players.PlayerAdded:Connect(function(p)
+	if p ~= LocalPlayer then
+		createESP(p)
 	end
 end)
