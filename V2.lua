@@ -1,4 +1,4 @@
--- UI Loadstring ESP Circle & Box with Healthbar - Luminaprojects
+-- UI Loadstring ESP Circle & Box with Healthbar + TP Tool - Luminaprojects
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Camera = workspace.CurrentCamera
@@ -6,7 +6,7 @@ local LocalPlayer = Players.LocalPlayer
 
 -- Create UI
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "ESP_Menu"
+ScreenGui.Name = "Universal ESP"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
@@ -35,7 +35,7 @@ Scroll.Name = "Scroll"
 
 -- Title
 local Title = Instance.new("TextLabel", MainFrame)
-Title.Text = "🎯 ESP Menu - Luminaprojects"
+Title.Text = "Universal ESP"
 Title.Size = UDim2.new(1, -40, 0, 30)
 Title.Position = UDim2.new(0, 10, 0, 0)
 Title.Font = Enum.Font.GothamBold
@@ -113,33 +113,17 @@ local posY = 10
 posY = createToggle(Scroll, "Esp Circle 🛡️", posY, function(on) print("Circle", on) end)
 posY = createToggle(Scroll, "Esp Box 🛡️", posY, function(on) print("Box", on) end)
 
--- Walkspeed
-local wsBtn = Instance.new("TextButton", Scroll)
-wsBtn.Position = UDim2.new(0, 10, 0, posY)
-wsBtn.Size = UDim2.new(1, -20, 0, 20)
-wsBtn.Text = "Custom Walkspeed"
-wsBtn.Font = Enum.Font.Gotham
-wsBtn.TextSize = 12
-wsBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-wsBtn.TextColor3 = Color3.new(1, 1, 1)
-Instance.new("UICorner", wsBtn)
-wsBtn.MouseButton1Click:Connect(function()
-	LocalPlayer.Character.Humanoid.WalkSpeed = 50
-end)
-posY += 25
-
--- JumpPower
-local jpBtn = wsBtn:Clone()
-jpBtn.Text = "Custom JumpPower"
-jpBtn.Position = UDim2.new(0, 10, 0, posY)
-jpBtn.Parent = Scroll
-jpBtn.MouseButton1Click:Connect(function()
-	LocalPlayer.Character.Humanoid.JumpPower = 100
-end)
-posY += 25
-
--- TP Tool that survives respawn
-local function setupTPTool()
+-- TP Tool
+local tpBtn = Instance.new("TextButton", Scroll)
+tpBtn.Position = UDim2.new(0, 10, 0, posY)
+tpBtn.Size = UDim2.new(1, -20, 0, 20)
+tpBtn.Text = "TP Tool"
+tpBtn.Font = Enum.Font.Gotham
+tpBtn.TextSize = 12
+tpBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+tpBtn.TextColor3 = Color3.new(1, 1, 1)
+Instance.new("UICorner", tpBtn)
+tpBtn.MouseButton1Click:Connect(function()
 	local tool = Instance.new("Tool")
 	tool.RequiresHandle = false
 	tool.Name = "TP Tool"
@@ -148,20 +132,8 @@ local function setupTPTool()
 		LocalPlayer.Character:MoveTo(mouse.Hit.Position)
 	end)
 	tool.Parent = LocalPlayer:WaitForChild("Backpack")
-end
-
-local tpBtn = wsBtn:Clone()
-tpBtn.Text = "Tp Tool"
-tpBtn.Position = UDim2.new(0, 10, 0, posY)
-tpBtn.Parent = Scroll
-tpBtn.MouseButton1Click:Connect(setupTPTool)
-posY += 25
-
--- Ensure TP Tool re-added after respawn
-LocalPlayer.CharacterAdded:Connect(function()
-	task.wait(1)
-	setupTPTool()
 end)
+posY += 25
 
 -- RGB Credit
 local credit = Instance.new("TextLabel", Scroll)
