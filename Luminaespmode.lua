@@ -6,7 +6,7 @@ local LocalPlayer = Players.LocalPlayer
 
 -- UI
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "📜 Universal - Esp"
+ScreenGui.Name = "ESP_Menu"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.IgnoreGuiInset = true
 ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
@@ -24,7 +24,7 @@ MainFrame.Parent = ScreenGui
 Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 10)
 
 local Title = Instance.new("TextLabel", MainFrame)
-Title.Text = "📜 Universal - Esp"
+Title.Text = "Universal - Esp"
 Title.Size = UDim2.new(1, -60, 1, 0)
 Title.Position = UDim2.new(0, 10, 0, 0)
 Title.Font = Enum.Font.GothamBold
@@ -55,9 +55,9 @@ MinBtn.TextColor3 = Color3.new(1, 1, 1)
 MinBtn.TextSize = 14
 
 local ContentFrame = Instance.new("Frame")
-ContentFrame.Parent = ScreenGui
-ContentFrame.Position = MainFrame.Position + UDim2.new(0, 0, 0, 35)
-ContentFrame.Size = UDim2.new(0, 300, 0, 200)
+ContentFrame.Parent = MainFrame -- Fix agar ngikut saat drag
+ContentFrame.Position = UDim2.new(0, 0, 1, 5)
+ContentFrame.Size = UDim2.new(1, 0, 0, 180)
 ContentFrame.BackgroundTransparency = 1
 ContentFrame.Name = "ContentFrame"
 
@@ -126,4 +126,83 @@ MinBtn.MouseButton1Click:Connect(function()
 	ContentFrame.Visible = not isMinimized
 end)
 
--- ESP core logic ditambahkan di luar UI bagian, di bagian terpisah ESP Engine.
+-- ESP ENGINE
+local function createESP(player)
+	local box = Drawing.new("Square")
+	box.Thickness = 1
+	box.Color = Color3.fromRGB(255, 255, 255)
+	box.Transparency = 1
+	box.Visible = false
+
+	local tracer = Drawing.new("Line")
+	tracer.Thickness = 1
+	tracer.Color = Color3.fromRGB(255, 255, 255)
+	tracer.Transparency = 1
+	tracer.Visible = false
+
+	local nameTag = Drawing.new("Text")
+	nameTag.Size = 13
+	nameTag.Center = true
+	nameTag.Outline = true
+	nameTag.Font = 2
+	nameTag.Color = Color3.fromRGB(255, 255, 255)
+	nameTag.Visible = false
+
+	local healthBar = Drawing.new("Line")
+	healthBar.Thickness = 2
+	healthBar.Color = Color3.fromRGB(0, 255, 0)
+	healthBar.Transparency = 1
+	healthBar.Visible = false
+
+	RunService.RenderStepped:Connect(function()
+		if not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") or not player.Character:FindFirstChild("Humanoid") then
+			box.Visible = false
+			tracer.Visible = false
+			nameTag.Visible = false
+			healthBar.Visible = false
+			return
+		end
+
+		local root = player.Character.HumanoidRootPart
+		local pos, onScreen = Camera:WorldToViewportPoint(root.Position)
+		local head = player.Character:FindFirstChild("Head")
+		if onScreen then
+			local scale = 3
+			local sizeY = (Camera:WorldToViewportPoint(root.Position - Vector3.new(0, 3, 0)).Y - pos.Y) * scale
+			local sizeX = sizeY / 1.5
+
+			box.Size = Vector2.new(sizeX, sizeY)
+			box.Position = Vector2.new(pos.X - sizeX / 2, pos.Y - sizeY / 2)
+			box.Visible = _G.BoxESP
+
+			tracer.From = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y)
+			tracer.To = Vector2.new(pos.X, pos.Y)
+			tracer.Visible = _G.TracerESP
+
+			nameTag.Position = Vector2.new(pos.X, pos.Y - sizeY / 2 - 15)
+			nameTag.Text = player.Name .. " [" .. math.floor((root.Position - Camera.CFrame.Position).Magnitude) .. "m]"
+			nameTag.Visible = _G.NametagESP
+
+			healthBar.From = Vector2.new(pos.X - sizeX / 2 - 5, pos.Y + sizeY / 2)
+			healthBar.To = Vector2.new(pos.X - sizeX / 2 - 5, pos.Y + sizeY / 2 - (sizeY * (player.Character.Humanoid.Health / player.Character.Humanoid.MaxHealth)))
+			healthBar.Visible = _G.BoxESP
+		else
+			box.Visible = false
+			tracer.Visible = false
+			nameTag.Visible = false
+			healthBar.Visible = false
+		end
+	end)
+end
+
+for _, plr in ipairs(Players:GetPlayers()) do
+	if plr ~= LocalPlayer then
+		createESP(plr)
+	end
+end
+
+Players.PlayerAdded:Connect(function(plr)
+	if plr ~= LocalPlayer then
+		createESP(plr)
+	end
+end)
